@@ -149,7 +149,7 @@ const CurrentWeatherAndHistory = ({ weatherData, setCoords, setLocationName, set
                                 </span>
                             </div>
                             <div className="metric">
-                                <span className="label">Wind Speed</span>
+                                <span className="label">Wind</span>
                                 <span className="value">
                                     {weatherData.current.wind_speed_10m}
                                     {weatherData.current_units.wind_speed_10m}

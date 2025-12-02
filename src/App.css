@@ -175,7 +175,7 @@ button:hover {
 
 .current-weather .card {
   /* Bright White Card */
-  background: #ffffff;
+  background: linear-gradient(110deg, #f8f674 0%,#6bb484 70%, #e96b9f 100%);
   padding: 40px 60px;
   border-radius: 25px;
   display: flex;
