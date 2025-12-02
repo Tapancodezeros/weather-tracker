@@ -20,7 +20,7 @@ const TenDayForecast = ({ weatherData, loading, units }) => {
 
     return (
         <div className="forecast-container">
-            <h2>Next 10-Day Estimated Forecast</h2>
+            <h2>Next 9-Day Estimated Forecast</h2>
             <div className="forecast-grid">
                 {forecastData.map((day, index) => (
                     <div key={index} className="forecast-card">

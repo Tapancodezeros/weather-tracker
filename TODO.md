@@ -1,0 +1,6 @@
+- [x] Add airQualityData state in App.js
+- [x] Modify fetchWeather in App.js to fetch air quality data alongside weather
+- [x] Add more current parameters to weather API call in App.js (humidity, pressure, UV index)
+- [x] Update CurrentWeatherAndHistory.js to display air quality metrics in current weather section
+- [x] Update CurrentWeatherAndHistory.js to display additional today's details (humidity, pressure, UV index)
+- [x] Test the app after changes
