@@ -9,7 +9,7 @@ function App() {
   const [locationName, setLocationName] = useState("London");
   const [coords, setCoords] = useState({ lat: 51.5074, lon: -0.1278 });
   const [weatherData, setWeatherData] = useState(null);
-  const [airQualityData, setAirQualityData] = useState(null); // New State for AQI
+  const [airQualityData, setAirQualityData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -18,10 +18,10 @@ function App() {
     setLoading(true);
     setErrorMsg("");
     try {
-      // 1. Fetch Weather Data (Added 'apparent_temperature' and 'wind_gusts_10m')
+      // 1. Fetch Weather Data
       const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,wind_speed_10m,wind_gusts_10m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&past_days=7&forecast_days=10&timezone=auto`;
       
-      // 2. Fetch Air Quality Data (Separate API)
+      // 2. Fetch Air Quality Data
       const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=european_aqi`;
 
       // Run both requests at the same time
@@ -79,31 +79,42 @@ function App() {
         {/* Navigation */}
         <nav className="navbar">
           <Link to="/">Current & History</Link>
-          <Link to="/forecast">10-Day Forecast</Link>
+          <Link to="/forecast">9-Day Forecast</Link>
         </nav>
         
         {errorMsg && <div className="error-message">{errorMsg}</div>}
-        {loading && <div className="loading">Updating Weather...</div>}
 
-        <Routes>
-          <Route path="/" element={
-            <CurrentWeatherAndHistory 
-              weatherData={weatherData}
-              airQualityData={airQualityData} // Passing the new AQI data down
-              setCoords={handleSetCoords}
-              setLocationName={handleSetLocationName}
-              setErrorMsg={handleSetErrorMsg}
-              loading={loading}
-            />
-          } />
-          <Route path="/forecast" element={
-            <TenDayForecast 
-              weatherData={weatherData}
-              loading={loading}
-              units={weatherData ? weatherData.daily_units : null}
-            />
-          } />
-        </Routes>
+        {/* --- NEW LOADER SECTION --- */}
+        {loading && (
+          <div className="loader-container">
+            <div className="spinner"></div>
+            <p>Updating Weather...</p>
+          </div>
+        )}
+
+        {/* Hide content while loading initially, or show underneath if refreshing */}
+        {!loading || weatherData ? (
+           <Routes>
+            <Route path="/" element={
+              <CurrentWeatherAndHistory 
+                weatherData={weatherData}
+                airQualityData={airQualityData}
+                setCoords={handleSetCoords}
+                setLocationName={handleSetLocationName}
+                setErrorMsg={handleSetErrorMsg}
+                loading={loading}
+              />
+            } />
+            <Route path="/forecast" element={
+              <TenDayForecast 
+                weatherData={weatherData}
+                loading={loading}
+                units={weatherData ? weatherData.daily_units : null}
+              />
+            } />
+          </Routes>
+        ) : null}
+       
       </div>
     </Router>
   );
