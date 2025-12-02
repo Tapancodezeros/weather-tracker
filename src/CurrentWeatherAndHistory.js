@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 
 // Geocoding API for search
 const GEOCODING_API = `https://geocoding-api.open-meteo.com/v1/search`;
