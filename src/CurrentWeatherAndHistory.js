@@ -86,7 +86,7 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                 <div className="search-input-container">
                     <form onSubmit={handleSearch}>
                         <input type="text" placeholder="Type 3 letters..." value={searchQuery} onChange={handleInputChange} />
-                        <button type="submit">Search</button>
+                        <button type="submit"> Search</button>
                     </form>
                     {showSuggestions && suggestions.length > 0 && (
                         <ul className="suggestions-list">
