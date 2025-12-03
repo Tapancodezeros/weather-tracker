@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import CurrentWeatherAndHistory from "./CurrentWeatherAndHistory";
 import TenDayForecast from "./TenDayForecast";
+import TodayWeather from "./TodayWeather"; // Import the new page
 import "./App.css";
 
 function App() {
@@ -18,8 +19,8 @@ function App() {
     setLoading(true);
     setErrorMsg("");
     try {
-      // 1. Fetch Weather Data
-      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,wind_speed_10m,wind_gusts_10m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&past_days=7&forecast_days=10&timezone=auto`;
+      // 1. Fetch Weather Data (Added 'hourly' for the graph)
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,wind_speed_10m,wind_gusts_10m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&hourly=temperature_2m,wind_speed_10m&past_days=7&forecast_days=10&timezone=auto`;
       
       // 2. Fetch Air Quality Data
       const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=european_aqi`;
@@ -79,20 +80,46 @@ function App() {
         {/* Navigation */}
         <nav className="navbar">
           <Link to="/">Current & History</Link>
+          <Link to="/today">Today's Hourly</Link> {/* Added Link */}
           <Link to="/forecast">9-Day Forecast</Link>
         </nav>
         
         {errorMsg && <div className="error-message">{errorMsg}</div>}
 
-        {/* --- NEW LOADER SECTION --- */}
+        {/* --- SKELETON LOADING UI --- */}
         {loading && (
-          <div className="loader-container">
-            <div className="spinner"></div>
-            <p>Updating Weather...</p>
+          <div className="skeleton-wrapper">
+            {/* Skeleton for Main Weather Card */}
+            <div className="skeleton-title-bar"></div>
+            <div className="card skeleton-card">
+              <div className="skeleton-left">
+                <div className="skeleton-circle"></div> {/* Icon */}
+                <div className="skeleton-temp-block"></div> {/* Temp */}
+                <div className="skeleton-text-small"></div> {/* Text */}
+              </div>
+              <div className="skeleton-right">
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line"></div>
+              </div>
+            </div>
+
+            {/* Skeleton for History Grid */}
+            <div className="skeleton-title-bar small"></div>
+            <div className="history-grid">
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="history-card skeleton-history-card">
+                  <div className="skeleton-date"></div>
+                  <div className="skeleton-mini-text"></div>
+                  <div className="skeleton-mini-text"></div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Hide content while loading initially, or show underneath if refreshing */}
+        {/* Hide content while loading initially, keep visible if just refreshing */}
         {!loading || weatherData ? (
            <Routes>
             <Route path="/" element={
@@ -102,6 +129,12 @@ function App() {
                 setCoords={handleSetCoords}
                 setLocationName={handleSetLocationName}
                 setErrorMsg={handleSetErrorMsg}
+                loading={loading}
+              />
+            } />
+            <Route path="/today" element={
+              <TodayWeather 
+                weatherData={weatherData}
                 loading={loading}
               />
             } />

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 // Geocoding API for search
 const GEOCODING_API = `https://geocoding-api.open-meteo.com/v1/search`;
@@ -106,16 +107,11 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                     <h3 style={{marginTop: 0}}>Current Weather</h3>
                     
                     <section className="current-weather">
-                        {/* CONDITIONALLY APPLY CSS CLASS:
-                           If isCold is true, add "ice-theme", otherwise just "card"
-                        */}
                         <div className={isCold ? "card ice-theme" : "card"}>
-                            
                             {/* Left Side: Icon & Temp */}
                             <div className="weather-main">
                                 <div className="weather-main-top">
                                     <div className="weather-icon">
-                                        {/* Change Icon based on temp (optional) */}
                                         {isCold ? '❄️' : '☀️'}
                                     </div>
                                     <div className="temp-container">
@@ -128,6 +124,10 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                                     RealFeel® {weatherData.current.apparent_temperature}°
                                 </div>
                                 <h4 className="condition-text">{isCold ? 'Cold' : 'Sunny'}</h4> 
+                                {/* Updated Link to New Page */}
+                                <Link to="/today" className="more-details">
+                                    VIEW HOURLY GRAPHS &gt;
+                                </Link>
                             </div>
 
                             {/* Right Side: Details List */}
