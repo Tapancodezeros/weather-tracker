@@ -1,16 +1,25 @@
-import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Cloud, Sun, Wind, Droplets, MapPin, Search } from 'lucide-react';
 
-// Geocoding API for search
-const GEOCODING_API = `https://geocoding-api.open-meteo.com/v1/search`;
+const GEOCODING_API = "https://geocoding-api.open-meteo.com/v1/search";
 
-const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setLocationName, setErrorMsg, loading }) => {
+const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setLocationName, setErrorMsg, loading, setView }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]); 
     const [showSuggestions, setShowSuggestions] = useState(false); 
     const wrapperRef = useRef(null);
 
-    // --- (Search & Location Handlers) ---
+    // Click outside to close suggestions
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [wrapperRef]);
+
     const handleInputChange = async (e) => {
         const value = e.target.value;
         setSearchQuery(value);
@@ -57,36 +66,42 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
         } else { setErrorMsg("Geolocation not supported."); }
     };
 
-    // --- Helper to get AQI Label & Class ---
     const getAqiInfo = (aqi) => {
+        if (!aqi) return { label: 'N/A', class: '' };
         if (aqi <= 20) return { label: 'Good', class: 'aqi-good' };
         if (aqi <= 40) return { label: 'Fair', class: 'aqi-fair' };
-        if (aqi <= 60) return { label: 'Moderate', class: 'aqi-fair' };
+        if (aqi <= 60) return { label: 'Moderate', class: 'aqi-moderate' };
         if (aqi <= 80) return { label: 'Poor', class: 'aqi-poor' };
         return { label: 'Unhealthy', class: 'aqi-unhealthy' };
     };
 
+    // Extract last 7 days from API
     const historyData = weatherData ? weatherData.daily.time.slice(0, 7).map((date, index) => ({
             date: date,
             max: weatherData.daily.temperature_2m_max[index],
             min: weatherData.daily.temperature_2m_min[index],
             rain: weatherData.daily.precipitation_sum[index],
-          })) : [];
+    })) : [];
     
     const aqiInfo = airQualityData ? getAqiInfo(airQualityData.current.european_aqi) : { label: 'N/A', class: '' };
-
-    // --- LOGIC FOR ICE BACKGROUND ---
     const currentTemp = weatherData ? weatherData.current.temperature_2m : 0;
-    const isCold = currentTemp < 5; 
+    const isCold = currentTemp < 10; 
 
     return (
-        <div ref={wrapperRef}>
-            {/* --- Search Bar --- */}
-            <div className="search-bar">
-                <div className="search-input-container">
-                    <form onSubmit={handleSearch}>
-                        <input type="text" placeholder="Type 3 letters..." value={searchQuery} onChange={handleInputChange} />
-                        <button type="submit"> Search</button>
+        <div ref={wrapperRef} className="animate-fade-in">
+            {/* Search Bar */}
+            <div className="search-bar-container">
+                <div className="search-wrapper">
+                    <form onSubmit={handleSearch} className="search-form">
+                        <Search size={20} className="search-icon" />
+                        <input 
+                            type="text" 
+                            placeholder="Search city..." 
+                            value={searchQuery} 
+                            onChange={handleInputChange}
+                            className="search-input"
+                        />
+                        <button type="submit" className="search-btn">Search</button>
                     </form>
                     {showSuggestions && suggestions.length > 0 && (
                         <ul className="suggestions-list">
@@ -99,81 +114,77 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                         </ul>
                     )}
                 </div>
-                <button className="location-btn" onClick={handleLiveLocation}>📍 Live Location</button>
+                <button className="location-btn" onClick={handleLiveLocation}>
+                    <MapPin size={18} /> Live Location
+                </button>
             </div>
             
             {!loading && weatherData && (
                 <div className="weather-content">
-                    <h3 style={{marginTop: 0}}>Current Weather</h3>
-                    
-                    <section className="current-weather">
-                        <div className={isCold ? "card ice-theme" : "card"}>
-                            {/* Left Side: Icon & Temp */}
-                            <div className="weather-main">
-                                <div className="weather-main-top">
-                                    <div className="weather-icon">
-                                        {isCold ? '❄️' : '☀️'}
-                                    </div>
-                                    <div className="temp-container">
-                                        <span className="big-temp">
-                                            {weatherData.current.temperature_2m}<span className="unit">°C</span>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="real-feel">
-                                    RealFeel® {weatherData.current.apparent_temperature}°
-                                </div>
-                                <h4 className="condition-text">{isCold ? 'Cold' : 'Sunny'}</h4> 
-                                {/* Updated Link to New Page */}
-                                <Link to="/today" className="more-details">
-                                    VIEW HOURLY GRAPHS &gt;
-                                </Link>
+                    {/* Current Weather Card */}
+                    <div className={`main-card ${isCold ? "ice-theme" : "sun-theme"}`}>
+                        <div className="card-header">
+                            <div>
+                                <h1 className="temp-display">
+                                    {Math.round(weatherData.current.temperature_2m)}°
+                                </h1>
+                                <p className="condition-text">{isCold ? 'Cold' : 'Sunny/Mild'}</p>
                             </div>
-
-                            {/* Right Side: Details List */}
-                            <div className="weather-details-list">
-                                <div className="detail-item">
-                                    <span className="detail-label">RealFeel Shade™</span>
-                                    <span className="detail-value">{weatherData.current.apparent_temperature}°</span>
-                                </div>
-                                <div className="detail-item">
-                                    <span className="detail-label">Wind</span>
-                                    <span className="detail-value">
-                                        N {weatherData.current.wind_speed_10m} {weatherData.current_units.wind_speed_10m}
-                                    </span>
-                                </div>
-                                <div className="detail-item">
-                                    <span className="detail-label">Wind Gusts</span>
-                                    <span className="detail-value">
-                                        {weatherData.current.wind_gusts_10m} {weatherData.current_units.wind_gusts_10m}
-                                    </span>
-                                </div>
-                                <div className="detail-item">
-                                    <span className="detail-label">Air Quality</span>
-                                    <span className={`detail-value ${aqiInfo.class}`}>
-                                        {aqiInfo.label}
-                                    </span>
-                                </div>
+                            <div className="weather-icon-large">
+                                {isCold ? <Cloud size={64} /> : <Sun size={64} />}
                             </div>
                         </div>
-                    </section>
+                        
+                        <div className="real-feel-section">
+                            <span>RealFeel® {Math.round(weatherData.current.apparent_temperature)}°</span>
+                        </div>
+
+                        <div className="details-grid">
+                            <div className="detail-item">
+                                <Wind size={20} />
+                                <span>{weatherData.current.wind_speed_10m} km/h</span>
+                            </div>
+                            <div className="detail-item">
+                                <Droplets size={20} />
+                                <span>{weatherData.current.relative_humidity_2m}% Humidity</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className={`aqi-badge ${aqiInfo.class}`}>
+                                    AQI: {aqiInfo.label}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="card-actions">
+                            <button onClick={() => setView('today')} className="action-link">
+                                VIEW HOURLY GRAPHS &gt;
+                            </button>
+                            <button onClick={() => setView('tenday')} className="action-link">
+                                10-DAY FORECAST &gt;
+                            </button>
+                        </div>
+                    </div>
 
                     {/* History Section */}
-                    <section className="history-weather">
+                    <div className="history-section">
                         <h3>Last 7 Days History</h3>
                         <div className="history-grid">
                             {historyData.map((day, index) => (
                                 <div key={index} className="history-card">
-                                    <div className="date">{day.date}</div>
-                                    <div className="history-details">
-                                        <p className="max-temp"><strong>Max:</strong> {day.max}°C</p>
-                                        <p className="min-temp"><strong>Min:</strong> {day.min}°C</p>
-                                        <p className="rain-sum"><strong>Rain:</strong> {day.rain}mm</p>
+                                    <div className="history-date">
+                                        {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
+                                    </div>
+                                    <div className="history-values">
+                                        <span className="h-max">{Math.round(day.max)}°</span>
+                                        <span className="h-min">{Math.round(day.min)}°</span>
+                                    </div>
+                                    <div className="history-rain">
+                                        <Droplets size={12} /> {day.rain}mm
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </section>
+                    </div>
                 </div>
             )}
         </div>

@@ -1,17 +1,15 @@
 import React from 'react';
+import { ArrowLeft, Calendar, Droplets } from 'lucide-react';
 
-const TenDayForecast = ({ weatherData, loading, units }) => {
+const TenDayForecast = ({ weatherData, loading, onBack }) => {
 
     if (loading || !weatherData) {
         return <div className="loading-page">Loading forecast data...</div>;
     }
 
-    // Display Logic for 10-Day Forecast
-    // The API response is ordered: 7 history days, 1 current day, then 10 forecast days.
-    // We slice from index 8 up to (but not including) index 18 to get the 10 future days.
+    // The API is configured to return 7 past days + current day + 10 forecast days.
+    // Slicing from index 8 gives us the *future* days.
     const forecastData = weatherData.daily.time.slice(8, 18).map((date, index) => ({
-        // Note: The index here is relative to the sliced array (0-9), but we need the index 
-        // in the original full array (8-17). We use original index by adding 8.
         date: date,
         max: weatherData.daily.temperature_2m_max[index + 8],
         min: weatherData.daily.temperature_2m_min[index + 8],
@@ -19,22 +17,26 @@ const TenDayForecast = ({ weatherData, loading, units }) => {
     }));
 
     return (
-        <div className="forecast-container">
-            <h2>Next 9-Day Estimated Forecast</h2>
-            <div className="forecast-grid">
+        <div className="sub-page-container animate-fade-in">
+             <button className="back-btn" onClick={onBack}>
+                <ArrowLeft size={20} /> Back to Overview
+            </button>
+            <h2>Next 10-Day Forecast</h2>
+            <div className="forecast-grid-container">
                 {forecastData.map((day, index) => (
                     <div key={index} className="forecast-card">
-                        <div className="day-name">{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
-                        <div className="forecast-details">
-                            <p className="max-temp">
-                                Max: {day.max}{units ? units.temperature_2m_max : '°C'}
-                            </p>
-                            <p className="min-temp">
-                                Min: {day.min}{units ? units.temperature_2m_min : '°C'}
-                            </p>
-                            <p className="rain-sum">
-                                Rain: {day.rain}{units ? units.precipitation_sum : 'mm'}
-                            </p>
+                        <div className="day-header">
+                            <Calendar size={16} />
+                            <span>{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                        </div>
+                        <div className="forecast-body">
+                            <div className="forecast-temp">
+                                <span className="f-max">{Math.round(day.max)}°</span>
+                                <span className="f-min">{Math.round(day.min)}°</span>
+                            </div>
+                            <div className="forecast-rain">
+                                <Droplets size={14} /> {day.rain}mm
+                            </div>
                         </div>
                     </div>
                 ))}
