@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Cloud, Sun, Wind, Droplets, MapPin, Search } from 'lucide-react';
+import { Cloud, Sun, Wind, Droplets, MapPin, Search, Clock } from 'lucide-react';
 
 const GEOCODING_API = "https://geocoding-api.open-meteo.com/v1/search";
 
@@ -7,6 +7,7 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]); 
     const [showSuggestions, setShowSuggestions] = useState(false); 
+    const [timeLeft, setTimeLeft] = useState(60); // State for countdown
     const wrapperRef = useRef(null);
 
     // Click outside to close suggestions
@@ -19,6 +20,22 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [wrapperRef]);
+
+    // Auto-reload countdown timer
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimeLeft((prevTime) => {
+                if (prevTime <= 1) {
+                    // Trigger reload by updating coords reference
+                    setCoords(prevCoords => ({ ...prevCoords }));
+                    return 60; // Reset timer
+                }
+                return prevTime - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [setCoords]);
 
     const handleInputChange = async (e) => {
         const value = e.target.value;
@@ -36,7 +53,11 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
     const handleSelectSuggestion = (city) => {
         setLocationName(`${city.name}, ${city.country}`);
         setCoords({ lat: city.latitude, lon: city.longitude });
-        setSearchQuery(""); setSuggestions([]); setShowSuggestions(false); setErrorMsg("");
+        setSearchQuery(""); 
+        setSuggestions([]); 
+        setShowSuggestions(false); 
+        setErrorMsg("");
+        setTimeLeft(60); // Reset timer on manual change
     };
 
     const handleSearch = async (e) => {
@@ -60,6 +81,7 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                     setLocationName("Your Current Location (GPS)");
                     setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
                     setErrorMsg("");
+                    setTimeLeft(60); // Reset timer on manual change
                 },
                 (err) => setErrorMsg("Location access denied.")
             );
@@ -114,9 +136,27 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                         </ul>
                     )}
                 </div>
-                <button className="location-btn" onClick={handleLiveLocation}>
-                    <MapPin size={18} /> Live Location
-                </button>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button className="location-btn" onClick={handleLiveLocation}>
+                        <MapPin size={18} /> Live Location
+                    </button>
+                    {/* Timer Display */}
+                    <div style={{ 
+                        fontSize: '0.8rem', 
+                        color: '#64748b', 
+                        background: '#f1f5f9', 
+                        padding: '8px 12px', 
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        whiteSpace: 'nowrap'
+                    }}>
+                        <Clock size={14} />
+                        {loading ? "Updating..." : `Auto-refresh: ${timeLeft}s`}
+                    </div>
+                </div>
             </div>
             
             {!loading && weatherData && (
@@ -126,7 +166,7 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                         <div className="card-header">
                             <div>
                                 <h1 className="temp-display">
-                                    {Math.round(weatherData.current.temperature_2m)}°
+                                    {weatherData.current.temperature_2m.toFixed(1)}°
                                 </h1>
                                 <p className="condition-text">{isCold ? 'Cold' : 'Sunny/Mild'}</p>
                             </div>
@@ -136,7 +176,7 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                         </div>
                         
                         <div className="real-feel-section">
-                            <span>RealFeel® {Math.round(weatherData.current.apparent_temperature)}°</span>
+                            <span>RealFeel® {weatherData.current.apparent_temperature.toFixed(1)}°</span>
                         </div>
 
                         <div className="details-grid">
@@ -160,7 +200,7 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                                 VIEW HOURLY GRAPHS &gt;
                             </button>
                             <button onClick={() => setView('tenday')} className="action-link">
-                                10-DAY FORECAST &gt;
+                                9-DAY FORECAST &gt;
                             </button>
                         </div>
                     </div>
@@ -175,8 +215,8 @@ const CurrentWeatherAndHistory = ({ weatherData, airQualityData, setCoords, setL
                                         {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
                                     </div>
                                     <div className="history-values">
-                                        <span className="h-max">{Math.round(day.max)}°</span>
-                                        <span className="h-min">{Math.round(day.min)}°</span>
+                                        <span className="h-max">{day.max.toFixed(1)}°</span>
+                                        <span className="h-min">{day.min.toFixed(1)}°</span>
                                     </div>
                                     <div className="history-rain">
                                         <Droplets size={12} /> {day.rain}mm
