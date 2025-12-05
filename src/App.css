@@ -103,7 +103,7 @@ body {
 .main-card {
     padding: 24px;
     border-radius: 20px;
-    color: white;
+    color: black;
     margin-bottom: 30px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
@@ -135,6 +135,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
+    
 }
 .aqi-badge { padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
 .aqi-good { background: #4ade80; color: #064e3b; }
