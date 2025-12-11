@@ -1,91 +1,81 @@
 import React, { useState, useEffect } from 'react';
-import './App.css'; // Importing your CSS file
+import './App.css';
 
-// Import components
-import CurrentWeatherAndHistory from './CurrentWeatherAndHistory';
-import TodayWeather from './TodayWeather';
-import TenDayForecast from './TenDayForecast';
+// Context
+import { ThemeProvider } from './context/ThemeContext';
 
-const WEATHER_API = "https://api.open-meteo.com/v1/forecast";
-const AQI_API = "https://air-quality-api.open-meteo.com/v1/air-quality";
+// Hooks
+import { useWeather } from './hooks/useWeather';
+import { useFavorites } from './hooks/useFavorites';
+
+// Components
+import Header from './components/Header';
+import CurrentWeather from './components/CurrentWeather'; // Formerly CurrentWeatherAndHistory
+import HourlyChart from './components/HourlyChart';
+import ClothingAvatar from './components/ClothingAvatar';
+import TodayWeather from './components/TodayWeather';
+import WeatherMap from './components/WeatherMap';
+import TenDayForecast from './components/TenDayForecast';
+
+function AppContent() {
+  const { weather, loading, error, lastUpdated, cityName, location, updateLocation, refetch } = useWeather();
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const [unit, setUnit] = useState(localStorage.getItem('atmosphere_unit') || 'C');
+
+  useEffect(() => localStorage.setItem('atmosphere_unit', unit), [unit]);
+  const toggleUnit = () => setUnit(prev => prev === 'C' ? 'F' : 'C');
+
+  if (loading) return <div className="app-container loading-screen"><h2>Loading Atmosphere Pro...</h2></div>;
+  if (error) return <div className="app-container error-screen"><h2>{error}</h2><button onClick={refetch}>Retry</button></div>;
+
+  return (
+    <div className="app-container">
+      <Header 
+        cityName={cityName} 
+        lastUpdated={lastUpdated}
+        isFav={isFavorite(cityName)}
+        onToggleFav={() => toggleFavorite(cityName, location.lat, location.lon)}
+        onSelectCity={updateLocation}
+        unit={unit}
+        onToggleUnit={toggleUnit}
+      />
+
+      <main className="dashboard-grid">
+        <div className="main-section">
+          <CurrentWeather data={weather} unit={unit} />
+          <HourlyChart hourlyData={weather.hourly} unit={unit} />
+          <ClothingAvatar 
+            temperature={weather.current.temperature_2m}
+            rainCode={weather.current.weather_code}
+          />
+          <TodayWeather current={weather.current} />
+        </div>
+
+        <aside className="sidebar">
+          {favorites.length > 0 && (
+            <div className="weather-card favorites-card">
+              <h3>Saved Locations</h3>
+              <div className="favorites-list">
+                {favorites.map((fav, index) => (
+                  <div key={index} className="fav-item" onClick={() => updateLocation(fav.name, fav.lat, fav.lon)}>
+                    📍 {fav.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <WeatherMap lat={location.lat} lon={location.lon} city={cityName} />
+          <TenDayForecast daily={weather.daily} unit={unit} />
+        </aside>
+      </main>
+    </div>
+  );
+}
 
 export default function App() {
-    // Default location: London
-    const [coords, setCoords] = useState({ lat: 51.5074, lon: -0.1278 });
-    const [locationName, setLocationName] = useState("London, United Kingdom");
-    const [weatherData, setWeatherData] = useState(null);
-    const [airQualityData, setAirQualityData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [errorMsg, setErrorMsg] = useState("");
-    
-    // View state: 'current', 'today', 'tenday'
-    const [view, setView] = useState('current');
-
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                // Fetch Weather (Current, Hourly, Daily with History)
-                const weatherUrl = `${WEATHER_API}?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto&past_days=7&forecast_days=11`;
-                
-                const weatherRes = await fetch(weatherUrl);
-                const weatherJson = await weatherRes.json();
-                setWeatherData(weatherJson);
-
-                // Fetch Air Quality
-                const aqiUrl = `${AQI_API}?latitude=${coords.lat}&longitude=${coords.lon}&current=european_aqi`;
-                const aqiRes = await fetch(aqiUrl);
-                const aqiJson = await aqiRes.json();
-                setAirQualityData(aqiJson);
-
-                setErrorMsg("");
-            } catch (err) {
-                console.error(err);
-                setErrorMsg("Failed to fetch weather data.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [coords]);
-
-    return (
-        <div className="app-container">
-            <header className="app-header">
-                <h2>{locationName}</h2>
-                {errorMsg && <div className="error-badge">{errorMsg}</div>}
-            </header>
-
-            <main className="app-main">
-                {view === 'current' && (
-                    <CurrentWeatherAndHistory 
-                        weatherData={weatherData}
-                        airQualityData={airQualityData}
-                        setCoords={setCoords}
-                        setLocationName={setLocationName}
-                        setErrorMsg={setErrorMsg}
-                        loading={loading}
-                        setView={setView}
-                    />
-                )}
-                
-                {view === 'today' && (
-                    <TodayWeather 
-                        weatherData={weatherData} 
-                        loading={loading}
-                        onBack={() => setView('current')}
-                    />
-                )}
-
-                {view === 'tenday' && (
-                    <TenDayForecast 
-                        weatherData={weatherData} 
-                        loading={loading}
-                        onBack={() => setView('current')}
-                    />
-                )}
-            </main>
-        </div>
-    );
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
 }
