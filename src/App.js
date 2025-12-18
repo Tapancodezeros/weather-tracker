@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-
 // Context
 import { ThemeProvider } from './context/ThemeContext';
-
 // Hooks
 import { useWeather } from './hooks/useWeather';
 import { useFavorites } from './hooks/useFavorites';
-
 // Components
 import Header from './components/Header';
 import CurrentWeather from './components/CurrentWeather'; // Formerly CurrentWeatherAndHistory

@@ -9,6 +9,7 @@ const TodayWeather = ({ current }) => {
         <div className="detail-item"><span>Humidity</span><strong>{current.relative_humidity_2m}%</strong></div>
         <div className="detail-item"><span>Cloud Cover</span><strong>{current.cloud_cover}%</strong></div>
         <div className="detail-item"><span>Rain</span><strong>{current.rain} mm</strong></div>
+        <div className="detail-item"><span>AQI</span><strong>{current.aqi}</strong></div>
       </div>
     </div>
   );

@@ -3,9 +3,9 @@ import React from 'react';
 const CurrentWeatherAndHistory = ({ data, unit }) => {
   if (!data) return null;
   const rawTemp = data.current.temperature_2m;
-  const displayTemp = unit === 'F' ? Math.round((rawTemp * 9/5) + 32) : Math.round(rawTemp);
-  const feelsLike = unit === 'F' ? Math.round(((rawTemp - 2) * 9/5) + 32) : Math.round(rawTemp - 2);
-  
+  const displayTemp = unit === 'F' ? ((rawTemp * 9 / 5) + 32).toFixed(1) : rawTemp.toFixed(1);
+  const feelsLike = unit === 'F' ? (((rawTemp - 2) * 9 / 5) + 32).toFixed(1) : (rawTemp - 2).toFixed(1);
+
   const todayMax = data.daily.temperature_2m_max[1];
   const yesterdayMax = data.daily.temperature_2m_max[0];
   const diff = (todayMax - yesterdayMax).toFixed(1);
