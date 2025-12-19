@@ -1,15 +1,17 @@
 import React from 'react';
 
-const ClothingAvatar = ({ temperature, rainCode }) => {
+const ClothingAvatar = ({ temperature, rainCode, uvIndex }) => {
   let emoji = "😎";
   let message = "It's a beautiful day!";
   let top = "T-Shirt";
 
   if (temperature < 15) { emoji = "🧥"; message = "Bring a jacket!"; top = "Hoodie"; }
   if (temperature < 5) { emoji = "🥶"; message = "Bundle up!"; top = "Heavy Coat"; }
-  
+
   const isRaining = (rainCode >= 51 && rainCode <= 67) || (rainCode >= 80 && rainCode <= 82);
   if (isRaining) { emoji = "☔"; message = "Don't forget your umbrella!"; }
+  else if (uvIndex > 6) { emoji = "🧴"; message = "Use sunscreen, UV is high!"; }
+  else if (uvIndex > 4) { emoji = "🕶️"; message = "Don't forget sunglasses!"; }
 
   return (
     <div className="weather-card outfit-card">

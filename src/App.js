@@ -27,8 +27,8 @@ function AppContent() {
 
   return (
     <div className="app-container">
-      <Header 
-        cityName={cityName} 
+      <Header
+        cityName={cityName}
         lastUpdated={lastUpdated}
         isFav={isFavorite(cityName)}
         onToggleFav={() => toggleFavorite(cityName, location.lat, location.lon)}
@@ -41,11 +41,12 @@ function AppContent() {
         <div className="main-section">
           <CurrentWeather data={weather} unit={unit} />
           <HourlyChart hourlyData={weather.hourly} unit={unit} />
-          <ClothingAvatar 
+          <ClothingAvatar
             temperature={weather.current.temperature_2m}
             rainCode={weather.current.weather_code}
+            uvIndex={weather.daily.uv_index_max[1]}
           />
-          <TodayWeather current={weather.current} />
+          <TodayWeather current={weather.current} daily={weather.daily} />
         </div>
 
         <aside className="sidebar">
