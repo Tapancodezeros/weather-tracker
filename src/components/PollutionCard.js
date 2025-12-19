@@ -48,7 +48,7 @@ const PollutionCard = ({ data }) => {
                 </div>
                 <div className="pollutant-item">
                     <span className="p-label">SO₂</span>
-                    <span className="p-value">{data.so2}</span>
+                    <span className="p-value">{data.sulphur_dioxide}</span>
                     <span className="p-unit">µg/m³</span>
                 </div>
                 <div className="pollutant-item">

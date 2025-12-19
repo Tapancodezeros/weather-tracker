@@ -428,6 +428,46 @@ body {
 }
 
 
+/* Forecast List */
+.forecast-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.forecast-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.forecast-row:last-child {
+  border-bottom: none;
+}
+
+.forecast-row .date {
+  width: 60px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.forecast-row .temp-range {
+  display: flex;
+  gap: 15px;
+  width: 80px;
+  justify-content: flex-end;
+}
+
+.forecast-row .high {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.forecast-row .low {
+  color: var(--text-secondary);
+}
+
 /* Pollution Card */
 .pollution-header {
   display: flex;

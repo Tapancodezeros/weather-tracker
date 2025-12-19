@@ -47,10 +47,6 @@ const TodayWeather = ({ current, daily }) => {
           <span>Rain</span>
           <strong>{current.rain} <small>mm</small></strong>
         </div>
-        <div className="detail-item">
-          <span>Cloud Cover</span>
-          <strong>{current.cloud_cover}%</strong>
-        </div>
       </div>
     </div>
   );
