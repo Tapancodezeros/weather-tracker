@@ -13,6 +13,7 @@ import ClothingAvatar from './components/ClothingAvatar';
 import TodayWeather from './components/TodayWeather';
 import WeatherMap from './components/WeatherMap';
 import TenDayForecast from './components/TenDayForecast';
+import PollutionCard from './components/PollutionCard';
 
 function AppContent() {
   const { weather, loading, error, lastUpdated, cityName, location, updateLocation, refetch } = useWeather();
@@ -47,6 +48,7 @@ function AppContent() {
             uvIndex={weather.daily.uv_index_max[1]}
           />
           <TodayWeather current={weather.current} daily={weather.daily} />
+          <PollutionCard data={weather.current.air_quality} />
         </div>
 
         <aside className="sidebar">
